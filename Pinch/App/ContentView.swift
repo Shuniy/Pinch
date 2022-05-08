@@ -14,12 +14,19 @@ struct ContentView: View {
     @State private var imageOffset: CGSize = .zero
     @State private var isDrawerOpen: Bool = false
     
+    let pages: [Page] = pagesData
+    @State private var pageIndex: Int = 1
+    
     //MARK: Function
     func resetImageState() {
         return withAnimation(.spring()) {
             imageScale = 1
             imageOffset = .zero
         }
+    }
+    
+    func currentPage() -> String {
+        return pages[pageIndex - 1].imageName
     }
     
     //MARK: BODY
@@ -29,7 +36,7 @@ struct ContentView: View {
                 Color.clear
                 
                 //MARK: Page Image
-                Image("magazine-front-cover")
+                Image(currentPage())
                     .resizable()
                     .scaledToFit()
                     .cornerRadius(10)
@@ -152,6 +159,22 @@ struct ContentView: View {
                             }
                         }
                     //MARK: Thumbnails
+                    ForEach(pages) { page in
+                        Image(page.thumbnailName)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(maxWidth: 80)
+                            .cornerRadius(9)
+                            .shadow(radius: 5)
+                            .opacity(isDrawerOpen ? 1 : 0)
+                            .animation(.easeOut(duration: 0.5), value: isDrawerOpen)
+                            .onTapGesture {
+                                withAnimation(.spring()) {
+                                    isAnimating = true
+                                    pageIndex = page.id
+                                }
+                            }
+                    }
                     Spacer()
                 }//:HStack Drawer
                 .padding(EdgeInsets(top: 16, leading: 8, bottom: 16, trailing: 8))
