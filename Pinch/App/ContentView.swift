@@ -25,6 +25,8 @@ struct ContentView: View {
     var body: some View {
         NavigationView {
             ZStack {
+                Color.clear
+                
                 //MARK: Page Image
                 Image("magazine-front-cover")
                     .resizable()
@@ -58,6 +60,25 @@ struct ContentView: View {
                                 }
                             })
                     )
+                //MARK: Magnification Gesture
+                    .gesture(MagnificationGesture()
+                        .onChanged({ value in
+                            withAnimation(.linear(duration: 1)) {
+                                if imageScale >= 1 && imageScale <= 5 {
+                                    imageScale = value
+                                } else if imageScale > 5 {
+                                    imageScale = 5
+                                }
+                            }
+                        })
+                            .onEnded({ _ in
+                                if imageScale > 5 {
+                                    imageScale = 5
+                                } else if imageScale <= 1{
+                                    resetImageState()
+                                }
+                            })
+                    )
             }
             .navigationTitle("Pinch & Zoom")
             .navigationBarTitleDisplayMode(.inline)
@@ -65,6 +86,55 @@ struct ContentView: View {
                 withAnimation(.linear(duration: 1)) {
                     isAnimating = true
                 }
+            }
+            .overlay(alignment: .top) {
+                InfoPanelView(scale: imageScale, offset: imageOffset)
+                    .padding(.horizontal)
+                    .padding(.top, 30)
+            }
+            //MARK: Controls
+            .overlay(alignment: .bottom) {
+                Group {
+                    HStack {
+                        //Scale Down
+                        Button {
+                            withAnimation(.spring()) {
+                                if imageScale > 1 {
+                                    imageScale -= 1
+                                }
+                                if imageScale <= 1 {
+                                    resetImageState()
+                                }
+                            }
+                        } label: {
+                            ControlImageView(icon: "minus.magnifyingglass")
+                        }
+                        
+                        //Reset
+                        Button {
+                            resetImageState()
+                        } label: {
+                            ControlImageView(icon: "arrow.up.left.and.down.right.magnifyingglass")
+                        }
+                        //Scale Up
+                        Button {
+                            withAnimation(.spring()) {
+                                if imageScale < 5 {
+                                    imageScale += 1
+                                }
+                                if imageScale > 5 {
+                                    imageScale = 5
+                                }
+                            }
+                        } label: {
+                            ControlImageView(icon: "plus.magnifyingglass")
+                        }
+                    }
+                }//:Controls
+                .padding(EdgeInsets(top: 12, leading: 20, bottom: 12, trailing: 20))
+                .background(.ultraThinMaterial)
+                .cornerRadius(12)
+                .opacity(isAnimating ? 1 : 0)
             }
         }//:NavigationView
         .navigationViewStyle(.stack)
